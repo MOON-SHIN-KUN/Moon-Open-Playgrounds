@@ -1299,6 +1299,71 @@ claimDaily.addEventListener("click", () => {
 
 updateDailyButton();
 
+// ========================================
+// 🍖 HUNGER SYSTEM
+// ========================================
+
+const hungerFill =
+    document.getElementById("hungerFill");
+
+const hungerText =
+    document.getElementById("hungerText");
+
+const MAX_HUNGER = 100;
+
+// Load saved hunger
+let hunger =
+    Number(localStorage.getItem("luffyHunger"));
+
+if (isNaN(hunger)) {
+    hunger = MAX_HUNGER;
+
+    localStorage.setItem(
+        "luffyHunger",
+        hunger
+    );
+}
+
+
+// Update Hunger UI
+function updateHunger() {
+
+    hunger = Math.max(
+        0,
+        Math.min(MAX_HUNGER, hunger)
+    );
+
+    hungerFill.style.width =
+        hunger + "%";
+
+    hungerText.textContent =
+        hunger + "%";
+
+    localStorage.setItem(
+        "luffyHunger",
+        hunger
+    );
+}
+
+
+// Hunger decreases every minute
+const HUNGER_INTERVAL = 60 * 1000;
+
+setInterval(() => {
+
+    if (hunger > 0) {
+
+        hunger--;
+
+        updateHunger();
+
+    }
+
+}, HUNGER_INTERVAL);
+
+
+// Initial display
+updateHunger();
 
 /* =========================
    🍖 MEAT INVENTORY
