@@ -1312,16 +1312,16 @@ const hungerText =
 const MAX_HUNGER = 100;
 
 // Load saved hunger
+let savedHunger =
+    localStorage.getItem("luffyHunger");
+
 let hunger =
-    Number(localStorage.getItem("luffyHunger"));
+    savedHunger === null
+        ? MAX_HUNGER
+        : Number(savedHunger);
 
 if (isNaN(hunger)) {
     hunger = MAX_HUNGER;
-
-    localStorage.setItem(
-        "luffyHunger",
-        hunger
-    );
 }
 
 
