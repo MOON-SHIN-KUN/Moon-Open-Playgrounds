@@ -422,9 +422,75 @@
             document.getElementById("reportSuccess");
 
 
-        bugForm.addEventListener("submit", (event) => {
+        bugForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-            event.preventDefault();
+    const submitButton = bugForm.querySelector('button[type="submit"]');
+
+    // Prevent double submissions
+    submitButton.disabled = true;
+    submitButton.textContent = "SENDING...";
+
+    const report = {
+        name: document.getElementById("reporterName").value.trim(),
+        title: document.getElementById("bugTitle").value.trim(),
+        platform: document.getElementById("platform").value,
+        browser: document.getElementById("browser").value,
+        description: document.getElementById("bugDescription").value.trim(),
+        steps: document.getElementById("bugSteps").value.trim(),
+        severity: document.querySelector(
+            'input[name="severity"]:checked'
+        )?.value
+    };
+
+    try {
+        const response = await fetch(
+            "https://moon-open-playgrounds.vercel.app/api/report",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(report)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || "Failed to send report");
+        }
+
+        // Save a local copy too
+        localStorage.setItem(
+            "lastBugReport",
+            JSON.stringify({
+                ...report,
+                date: new Date().toISOString()
+            })
+        );
+
+        // Show success screen
+        bugForm.style.display = "none";
+        reportSuccess.classList.add("show");
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    } catch (error) {
+        console.error("Bug report error:", error);
+
+        alert(
+            "❌ We couldn't send your bug report.\n\n" +
+            "Please try again in a moment."
+        );
+
+        submitButton.disabled = false;
+        submitButton.textContent = "SUBMIT BUG REPORT";
+    }
+});
 
 
             const report = {
