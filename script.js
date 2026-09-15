@@ -1311,16 +1311,38 @@ const hungerText =
 
 const MAX_HUNGER = 100;
 
+
+// Hunger system version
+const HUNGER_VERSION = 1;
+
+const savedHungerVersion =
+    localStorage.getItem("luffyHungerVersion");
+
+
+// Start fresh for Hunger System v1
+if (savedHungerVersion !== String(HUNGER_VERSION)) {
+
+    localStorage.setItem(
+        "luffyHunger",
+        MAX_HUNGER
+    );
+
+    localStorage.setItem(
+        "luffyHungerVersion",
+        HUNGER_VERSION
+    );
+}
+
+
 // Load saved hunger
-let savedHunger =
-    localStorage.getItem("luffyHunger");
-
 let hunger =
-    savedHunger === null
-        ? MAX_HUNGER
-        : Number(savedHunger);
+    Number(localStorage.getItem("luffyHunger"));
 
-if (isNaN(hunger)) {
+if (
+    isNaN(hunger) ||
+    hunger < 0 ||
+    hunger > MAX_HUNGER
+) {
     hunger = MAX_HUNGER;
 }
 
