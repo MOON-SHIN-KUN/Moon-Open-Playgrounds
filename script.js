@@ -1299,8 +1299,9 @@ claimDaily.addEventListener("click", () => {
 
 updateDailyButton();
 
+
 // ========================================
-// 🍖 HUNGER SYSTEM
+// ❤️ LUFFY BOND SYSTEM
 // ========================================
 
 const hungerFill =
@@ -1309,83 +1310,122 @@ const hungerFill =
 const hungerText =
     document.getElementById("hungerText");
 
-const MAX_HUNGER = 100;
+// Total Bond XP saved permanently
+let bondXP =
+    Number(localStorage.getItem("luffyBondXP")) || 0;
 
+if (!Number.isFinite(bondXP) || bondXP < 0) {
+    bondXP = 0;
+}
 
-// Hunger system version
-const HUNGER_VERSION = 1;
+// Rewards and cooldowns
+const BOND_REWARDS = {
+    pat: {
+        xp: 2,
+        cooldown: 8000
+    },
 
-const savedHungerVersion =
-    localStorage.getItem("luffyHungerVersion");
+    feed: {
+        xp: 10,
+        cooldown: 15000
+    }
+};
 
+let bondCooldowns = {};
 
-// Start fresh for Hunger System v1
-if (savedHungerVersion !== String(HUNGER_VERSION)) {
-
-    localStorage.setItem(
-        "luffyHunger",
-        MAX_HUNGER
-    );
-
-    localStorage.setItem(
-        "luffyHungerVersion",
-        HUNGER_VERSION
-    );
+try {
+    bondCooldowns = JSON.parse(
+        localStorage.getItem("luffyBondCooldowns")
+    ) || {};
+} catch {
+    bondCooldowns = {};
 }
 
 
-// Load saved hunger
-let hunger =
-    Number(localStorage.getItem("luffyHunger"));
+// Calculate current bond level
+function getBondLevel() {
+    let level = 1;
+    let remainingXP = bondXP;
+    let requiredXP = 100;
 
-if (
-    isNaN(hunger) ||
-    hunger < 0 ||
-    hunger > MAX_HUNGER
-) {
-    hunger = MAX_HUNGER;
-}
-
-
-// Update Hunger UI
-function updateHunger() {
-
-    hunger = Math.max(
-        0,
-        Math.min(MAX_HUNGER, hunger)
-    );
-
-    hungerFill.style.width =
-        hunger + "%";
-
-    hungerText.textContent =
-        hunger + "%";
-
-    localStorage.setItem(
-        "luffyHunger",
-        hunger
-    );
-}
-
-
-// Hunger decreases every minute
-const HUNGER_INTERVAL = 60 * 1000;
-
-setInterval(() => {
-
-    if (hunger > 0) {
-
-        hunger--;
-
-        updateHunger();
-
+    while (remainingXP >= requiredXP) {
+        remainingXP -= requiredXP;
+        level++;
+        requiredXP = 100 + (level - 1) * 25;
     }
 
-}, HUNGER_INTERVAL);
+    return {
+        level,
+        currentXP: remainingXP,
+        requiredXP
+    };
+}
+
+
+// Update Bond UI
+function updateBondDisplay() {
+    const bond = getBondLevel();
+
+    const progress =
+        (bond.currentXP / bond.requiredXP) * 100;
+
+    hungerFill.style.width = progress + "%";
+
+    hungerText.textContent =
+        `${bond.currentXP} / ${bond.requiredXP} XP`;
+
+    localStorage.setItem(
+        "luffyBondXP",
+        bondXP
+    );
+}
+
+
+// Award Bond XP
+function grantBondXP(action) {
+    const reward = BOND_REWARDS[action];
+
+    if (!reward) return;
+
+    const now = Date.now();
+
+    const lastReward =
+        Number(bondCooldowns[action]) || 0;
+
+    if (now - lastReward < reward.cooldown) {
+        return;
+    }
+
+    const previousLevel = getBondLevel().level;
+
+    bondXP += reward.xp;
+
+    bondCooldowns[action] = now;
+
+    localStorage.setItem(
+        "luffyBondCooldowns",
+        JSON.stringify(bondCooldowns)
+    );
+
+    updateBondDisplay();
+
+    const newLevel = getBondLevel().level;
+
+    if (newLevel > previousLevel) {
+        showStatus(
+            `🎉 BOND LEVEL UP! LEVEL ${newLevel}!`,
+            3000
+        );
+    } else {
+        showStatus(
+            `❤️ BOND +${reward.xp} XP!`
+        );
+    }
+}
 
 
 // Initial display
-updateHunger();
+updateBondDisplay();
 
 /* =========================
    🍖 MEAT INVENTORY
