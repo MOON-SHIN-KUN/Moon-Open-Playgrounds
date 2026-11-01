@@ -677,7 +677,7 @@ canvas.addEventListener("pointerdown", (event) => {
 meatButton.addEventListener(
     "click",
     () => {
-        setMood("HUNGRY");
+        setMood("EXCITED");
 
         if (
             playing ||
@@ -906,6 +906,7 @@ function feedLuffy() {
     meatInventory--;
 
     updateMeatInventory();
+    grantBondXP("feed");
 
     meatActive = true;
 
