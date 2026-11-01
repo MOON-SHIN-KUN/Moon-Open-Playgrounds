@@ -555,6 +555,8 @@ async function playPat() {
     showStatus("👋 Hey!");
     setMood("HAPPY");
 
+    grantBondXP("pat");
+
     const patEnd = Math.min(
         2,
         renderedFrames.length - 1
