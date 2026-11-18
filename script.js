@@ -1346,36 +1346,69 @@ try {
 
 
 // Calculate current bond level
+
 function getBondLevel() {
+
     let level = 1;
     let remainingXP = bondXP;
     let requiredXP = 100;
 
-    while (remainingXP >= requiredXP) {
+    while (
+        remainingXP >= requiredXP &&
+        level < 15
+    ) {
         remainingXP -= requiredXP;
         level++;
+
         requiredXP = 100 + (level - 1) * 25;
+    }
+
+    // Maximum level reached
+    if (level === 15) {
+        return {
+            level: 15,
+            currentXP: 425,
+            requiredXP: 425,
+            isMaxLevel: true
+        };
     }
 
     return {
         level,
         currentXP: remainingXP,
-        requiredXP
+        requiredXP,
+        isMaxLevel: false
     };
 }
 
 
+
 // Update Bond UI
+
 function updateBondDisplay() {
+
     const bond = getBondLevel();
 
     const progress =
-        (bond.currentXP / bond.requiredXP) * 100;
+        bond.isMaxLevel
+            ? 100
+            : (bond.currentXP / bond.requiredXP) * 100;
 
     hungerFill.style.width = progress + "%";
 
     hungerText.textContent =
-        `${bond.currentXP} / ${bond.requiredXP} XP`;
+        bond.isMaxLevel
+            ? "MAX LEVEL"
+            : `${bond.currentXP} / ${bond.requiredXP} XP`;
+
+    // Update the visible level label
+    const bondLevelLabel =
+        document.getElementById("bondLevel");
+
+    if (bondLevelLabel) {
+        bondLevelLabel.textContent =
+            "LV. " + bond.level;
+    }
 
     localStorage.setItem(
         "luffyBondXP",
@@ -1384,11 +1417,18 @@ function updateBondDisplay() {
 }
 
 
+
 // Award Bond XP
 function grantBondXP(action) {
     const reward = BOND_REWARDS[action];
 
     if (!reward) return;
+
+// No more XP after maximum level
+if (getBondLevel().level >= 15) {
+    showStatus("🏆 MAX BOND LEVEL!");
+    return;
+}
 
     const now = Date.now();
 
