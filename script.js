@@ -1325,12 +1325,12 @@ if (!Number.isFinite(bondXP) || bondXP < 0) {
 const BOND_REWARDS = {
     pat: {
         xp: 2,
-        cooldown: 8000
+        cooldown: 1500
     },
 
     feed: {
         xp: 10,
-        cooldown: 15000
+        cooldown: 6767
     }
 };
 
